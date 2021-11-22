@@ -7,7 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 import config
-from models.exceptions import NotBookableException
+from models.exceptions import NotBookableException, UnknownException
 from models.page_enums import PageStatus, SlotStatus
 
 AREA = config.AREA
@@ -60,29 +60,32 @@ def book_slot(slot: SlotStatus, driver):
 def main():
     firefox_options = webdriver.FirefoxOptions()
     driver = webdriver.Remote(options=firefox_options)
-    # driver = webdriver.Chrome("chromedriver")
-    driver.get(LOGIN_URL)
-    print("Getting login URL")
-    time.sleep(1)
+    try:
+        # driver = webdriver.Chrome("chromedriver")
+        driver.get(LOGIN_URL)
+        print("Getting login URL")
+        time.sleep(1)
 
-    if check_login(driver.page_source) == PageStatus.LOGIN:
-        print("Login page detected. Logging")
+        if check_login(driver.page_source) == PageStatus.LOGIN:
+            print("Login page detected. Logging")
 
-        element = driver.find_element(By.ID, "username")
-        element.send_keys(USERNAME)
-        element = driver.find_element(By.ID, "password")
-        element.send_keys(PASSWORD)
-        element.submit()
+            element = driver.find_element(By.ID, "username")
+            element.send_keys(USERNAME)
+            element = driver.find_element(By.ID, "password")
+            element.send_keys(PASSWORD)
+            element.submit()
 
-    else:
-        print("Maybe already logged in. Skipping...")
+        else:
+            print("Maybe already logged in. Skipping...")
 
-    book_slot(SlotStatus.EARLY, driver)
-    book_slot(SlotStatus.NOON, driver)
-    book_slot(SlotStatus.LATE, driver)
+        book_slot(SlotStatus.EARLY, driver)
+        book_slot(SlotStatus.NOON, driver)
+        book_slot(SlotStatus.LATE, driver)
 
-    print("Done! Closing browser...")
-    driver.quit()
+        print("Done! Closing browser...")
+        driver.quit()
+    except UnknownException:
+        driver.quit()
 
 
 main()
