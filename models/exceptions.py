@@ -1,0 +1,2 @@
+class NotBookableException(Exception):
+    pass
