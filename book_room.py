@@ -1,3 +1,4 @@
+import sys
 import time
 from datetime import datetime, timedelta
 from enum import auto
@@ -5,11 +6,11 @@ from enum import auto
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from xvfbwrapper import Xvfb
 
 import config
 from models.exceptions import NotBookableException, UnknownException
 from models.page_enums import PageStatus, SlotStatus
-from xvfbwrapper import Xvfb
 
 AREA = config.AREA
 ROOM = config.ROOM
@@ -58,36 +59,44 @@ def book_slot(slot: SlotStatus, driver):
     time.sleep(1)
 
 
+def start_virtual_displays():
+    vdisplay = Xvfb()
+    vdisplay.start()
+    return vdisplay
+
+
 def main():
-    with Xvfb() as xvfb:
+    if sys.platform == 'linux' or sys.platform == "linux2":
+        v_display = start_virtual_displays()
+    driver = webdriver.Chrome()
+    try:
 
-        driver = webdriver.Chrome("chromedriver")
-        try:
+        driver.get(LOGIN_URL)
+        print("Getting login URL")
+        time.sleep(1)
 
-            driver.get(LOGIN_URL)
-            print("Getting login URL")
-            time.sleep(1)
+        if check_login(driver.page_source) == PageStatus.LOGIN:
+            print("Login page detected. Logging")
 
-            if check_login(driver.page_source) == PageStatus.LOGIN:
-                print("Login page detected. Logging")
+            element = driver.find_element(By.ID, "username")
+            element.send_keys(USERNAME)
+            element = driver.find_element(By.ID, "password")
+            element.send_keys(PASSWORD)
+            element.submit()
 
-                element = driver.find_element(By.ID, "username")
-                element.send_keys(USERNAME)
-                element = driver.find_element(By.ID, "password")
-                element.send_keys(PASSWORD)
-                element.submit()
+        else:
+            print("Maybe already logged in. Skipping...")
 
-            else:
-                print("Maybe already logged in. Skipping...")
+        book_slot(SlotStatus.EARLY, driver)
+        book_slot(SlotStatus.NOON, driver)
+        book_slot(SlotStatus.LATE, driver)
 
-            book_slot(SlotStatus.EARLY, driver)
-            book_slot(SlotStatus.NOON, driver)
-            book_slot(SlotStatus.LATE, driver)
-
-            print("Done! Closing browser...")
-            driver.quit()
-        except UnknownException:
-            driver.quit()
+        print("Done! Closing browser...")
+        driver.quit()
+    except UnknownException:
+        driver.quit()
+    if sys.platform == 'linux' or sys.platform == "linux2" and v_display:
+        v_display.stop()
 
 
 main()
