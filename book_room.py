@@ -59,9 +59,10 @@ def book_slot(slot: SlotStatus, driver):
 
 def main():
     firefox_options = webdriver.FirefoxOptions()
-    driver = webdriver.Remote(options=firefox_options)
+    # driver = webdriver.Remote(options=firefox_options)
+    driver = webdriver.Chrome("chromedriver")
     try:
-        # driver = webdriver.Chrome("chromedriver")
+
         driver.get(LOGIN_URL)
         print("Getting login URL")
         time.sleep(1)
