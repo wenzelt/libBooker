@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 import config
 from models.exceptions import NotBookableException, UnknownException
 from models.page_enums import PageStatus, SlotStatus
+from xvfbwrapper import Xvfb
 
 AREA = config.AREA
 ROOM = config.ROOM
@@ -60,33 +61,35 @@ def book_slot(slot: SlotStatus, driver):
 def main():
     firefox_options = webdriver.FirefoxOptions()
     # driver = webdriver.Remote(options=firefox_options)
-    driver = webdriver.Chrome("chromedriver")
-    try:
+    with Xvfb() as xvfb:
 
-        driver.get(LOGIN_URL)
-        print("Getting login URL")
-        time.sleep(1)
+        driver = webdriver.Chrome("chromedriver")
+        try:
 
-        if check_login(driver.page_source) == PageStatus.LOGIN:
-            print("Login page detected. Logging")
+            driver.get(LOGIN_URL)
+            print("Getting login URL")
+            time.sleep(1)
 
-            element = driver.find_element(By.ID, "username")
-            element.send_keys(USERNAME)
-            element = driver.find_element(By.ID, "password")
-            element.send_keys(PASSWORD)
-            element.submit()
+            if check_login(driver.page_source) == PageStatus.LOGIN:
+                print("Login page detected. Logging")
 
-        else:
-            print("Maybe already logged in. Skipping...")
+                element = driver.find_element(By.ID, "username")
+                element.send_keys(USERNAME)
+                element = driver.find_element(By.ID, "password")
+                element.send_keys(PASSWORD)
+                element.submit()
 
-        book_slot(SlotStatus.EARLY, driver)
-        book_slot(SlotStatus.NOON, driver)
-        book_slot(SlotStatus.LATE, driver)
+            else:
+                print("Maybe already logged in. Skipping...")
 
-        print("Done! Closing browser...")
-        driver.quit()
-    except UnknownException:
-        driver.quit()
+            book_slot(SlotStatus.EARLY, driver)
+            book_slot(SlotStatus.NOON, driver)
+            book_slot(SlotStatus.LATE, driver)
+
+            print("Done! Closing browser...")
+            driver.quit()
+        except UnknownException:
+            driver.quit()
 
 
 main()
