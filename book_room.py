@@ -59,8 +59,6 @@ def book_slot(slot: SlotStatus, driver):
 
 
 def main():
-    firefox_options = webdriver.FirefoxOptions()
-    # driver = webdriver.Remote(options=firefox_options)
     with Xvfb() as xvfb:
 
         driver = webdriver.Chrome("chromedriver")
