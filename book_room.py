@@ -2,6 +2,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from enum import auto
+from typing import Tuple
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -41,7 +42,7 @@ def check_bookable(page_source: str) -> bool:
     return False
 
 
-def book_slot(slot: SlotStatus, driver):
+def book_slot(slot: SlotStatus, driver) -> Tuple[SlotStatus, bool]:
     now = datetime.now()
     next_bookable_date = now + timedelta(days=2)
     room_url = f"https://reservierung.ub.uni-muenchen.de/edit_entry.php?view=day&year={next_bookable_date.year}&month={next_bookable_date.month}&day={next_bookable_date.day}&area={AREA}&room={ROOM}&period={slot}"
@@ -49,12 +50,12 @@ def book_slot(slot: SlotStatus, driver):
     time.sleep(2)
 
     if not check_bookable(driver.page_source):
-        driver.quit()
-        raise NotBookableException("This slot is no longer bookable")
+        return slot, False
     name_field = driver.find_element(By.ID, "name")
     name_field.send_keys(RESERVATION_NAME)
     name_field.submit()
     time.sleep(1)
+    return slot, True
 
 
 def start_virtual_displays():
@@ -64,7 +65,7 @@ def start_virtual_displays():
 
 
 def main():
-    if sys.platform == 'linux' or sys.platform == "linux2":
+    if sys.platform == "linux" or sys.platform == "linux2":
         v_display = start_virtual_displays()
     driver = webdriver.Chrome()
     try:
@@ -85,15 +86,18 @@ def main():
         else:
             print("Maybe already logged in. Skipping...")
 
-        book_slot(SlotStatus.EARLY, driver)
-        book_slot(SlotStatus.NOON, driver)
-        book_slot(SlotStatus.LATE, driver)
-
+        # booking all three slots for
+        slots = [
+            book_slot(SlotStatus.EARLY, driver),
+            book_slot(SlotStatus.NOON, driver),
+            book_slot(SlotStatus.LATE, driver),
+        ]
+        print(f"Slots Booked: {slots}")
         print("Done! Closing browser...")
         driver.quit()
     except UnknownException:
         driver.quit()
-    if sys.platform == 'linux' or sys.platform == "linux2" and v_display:
+    if sys.platform == "linux" or sys.platform == "linux2" and v_display:
         v_display.stop()
 
 
