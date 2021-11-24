@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from xvfbwrapper import Xvfb
 
 import config
-from models.exceptions import NotBookableException, UnknownException
+from models.exceptions import UnknownException
 from models.page_enums import PageStatus, SlotStatus
 
 AREA = config.AREA
