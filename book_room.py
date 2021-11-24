@@ -36,10 +36,8 @@ def check_bookable(page_source: str) -> bool:
     soup = BeautifulSoup(page_source, features="html.parser")
     policy = soup.find("span", {"id": "policy_check"})
     conflict = soup.find("span", {"id": "conflict_check"})
-    if conflict and policy:
-        return (
-            True if "good" in policy["class"] and "good" in conflict["class"] else False
-        )
+    if conflict.get("class") is None and policy.get("class") is None:
+        return True
     return False
 
 
