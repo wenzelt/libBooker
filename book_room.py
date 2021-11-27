@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from enum import auto
 from typing import Tuple
 
+import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -32,20 +33,38 @@ def check_login(page_source: str) -> auto:
     else:
         return PageStatus.UNDEFINED
 
+def del_booking():
+    requests.post(url="https://reservierung.ub.uni-muenchen.de/del_entry.php", params= {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "accept-language": "en-US,en;q=0.9,de-DE;q=0.8,de;q=0.7",
+            "cache-control": "no-cache",
+            "content-type": "application/x-www-form-urlencoded",
+            "pragma": "no-cache",
+            "sec-ch-ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"96\", \"Google Chrome\";v=\"96\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1"
+        })
 
 def check_bookable(page_source: str) -> bool:
     soup = BeautifulSoup(page_source, features="html.parser")
     policy = soup.find("span", {"id": "policy_check"})
     conflict = soup.find("span", {"id": "conflict_check"})
     if policy:
-        if policy.get("class")[0] != "good":
-            print(policy.get("title"))
+        if policy.get("class"):
+            if policy.get("class")[0] != "good":
+                print(policy.get("title"))
     if conflict:
-        if conflict.get("class")[0] != "good":
-            print(conflict.get("title"))
-            return False
-        else:
-            return True
+        if policy.get("class"):
+            if conflict.get("class")[0] != "good":
+                print(conflict.get("title"))
+                return False
+            else:
+                return True
     return False
 
 
@@ -107,5 +126,5 @@ def main():
     if sys.platform == "linux" or sys.platform == "linux2" and v_display:
         v_display.stop()
 
-
+del_booking()
 main()
