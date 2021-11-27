@@ -56,11 +56,11 @@ def check_bookable(page_source: str) -> bool:
     conflict = soup.find("span", {"id": "conflict_check"})
     if policy:
         if policy.get("class"):
-            if policy.get("class")[0] != "good":
+            if "good" not in policy.get("class"):
                 print(policy.get("title"))
     if conflict:
         if policy.get("class"):
-            if conflict.get("class")[0] != "good":
+            if "good" not in conflict.get("class"):
                 print(conflict.get("title"))
                 return False
             else:
