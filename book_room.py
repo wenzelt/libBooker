@@ -2,7 +2,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from enum import auto
-from typing import Tuple
+from typing import Tuple, TypedDict
 
 import requests
 from bs4 import BeautifulSoup
@@ -14,6 +14,7 @@ from xvfbwrapper import Xvfb
 import config
 from models.exceptions import UnknownException
 from models.page_enums import PageStatus, SlotStatus
+from schedule import lauri_schedule, Schedule
 from utilities.folder_manager import save_screenshot, save_page_source
 
 RESERVATION_NAME = config.RESERVATION_NAME
@@ -72,17 +73,16 @@ def check_bookable(page_source: str) -> bool:
     return False
 
 
-def book_slot(slot: SlotStatus, driver: WebDriver, area=config.AREA, room=config.ROOM) -> Tuple[SlotStatus, bool]:
-    now = datetime.now()
-    next_bookable_date = now + timedelta(days=2)
+def book_slot(
+    slot: SlotStatus, driver: WebDriver, area=config.AREA, room=config.ROOM
+) -> Tuple[SlotStatus, bool]:
+    next_bookable_date = get_next_bookable_date()
     room_url = f"https://reservierung.ub.uni-muenchen.de/edit_entry.php?view=day&year={next_bookable_date.year}&month={next_bookable_date.month}&day={next_bookable_date.day}&area={area}&room={room}&period={slot}"
     driver.get(room_url)
     time.sleep(2)
     save_screenshot(driver)
     save_page_source(driver)
 
-    # if not check_bookable(driver.page_source):
-    #     return slot, False
     name_field = driver.find_element(By.ID, "name")
     name_field.send_keys(RESERVATION_NAME)
     name_field.submit()
@@ -93,10 +93,37 @@ def book_slot(slot: SlotStatus, driver: WebDriver, area=config.AREA, room=config
     return slot, True
 
 
-def start_virtual_displays():
+def get_next_bookable_date() -> datetime:
+    now = datetime.now()
+    next_bookable_date = now + timedelta(days=2)
+    return next_bookable_date
+
+
+def start_virtual_displays() -> Xvfb:
     vdisplay = Xvfb()
     vdisplay.start()
     return vdisplay
+
+
+def book_by_schedule(schedule: Schedule):
+    next_date = get_next_bookable_date()
+    weekday = next_date.strftime("%A")
+    amount_slots = schedule[weekday]
+    if amount_slots == 3:
+        book_slot(SlotStatus.EARLY, driver),
+        book_slot(SlotStatus.NOON, driver),
+        book_slot(SlotStatus.LATE, driver),
+        book_slot(SlotStatus.EARLY, driver),
+        book_slot(SlotStatus.NOON, driver),
+        book_slot(SlotStatus.LATE, driver),
+    if amount_slots == 2:
+        book_slot(SlotStatus.EARLY, driver),
+        book_slot(SlotStatus.NOON, driver),
+        book_slot(SlotStatus.EARLY, driver),
+        book_slot(SlotStatus.NOON, driver),
+    if amount_slots == 1:
+        book_slot(SlotStatus.EARLY, driver)
+        book_slot(SlotStatus.EARLY, driver)
 
 
 if __name__ == "__main__":
@@ -122,15 +149,7 @@ if __name__ == "__main__":
             print("Maybe already logged in. Skipping...")
 
         # booking all three slots for
-        slots = [
-            book_slot(SlotStatus.EARLY, driver),
-            book_slot(SlotStatus.NOON, driver),
-            book_slot(SlotStatus.LATE, driver),
-            book_slot(SlotStatus.EARLY, driver),
-            book_slot(SlotStatus.NOON, driver),
-            book_slot(SlotStatus.LATE, driver),
-        ]
-        print(f"Slots Booked: {slots}")
+        book_by_schedule(lauri_schedule)
         print("Done! Closing browser...")
         driver.quit()
     except UnknownException:
