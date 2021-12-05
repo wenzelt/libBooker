@@ -30,7 +30,7 @@ class LMUBooker(Booker):
             return PageStatus.UNDEFINED
 
     def book_slot(
-            self, slot: SlotStatus, area=config.AREA, room=config.ROOM
+        self, slot: SlotStatus, area=config.AREA, room=config.ROOM
     ) -> Tuple[SlotStatus, bool]:
         now = datetime.now()
         next_bookable_date = now + timedelta(days=2)

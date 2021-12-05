@@ -2,6 +2,7 @@ import time
 
 from selenium.webdriver.common.by import By
 
+from models.exceptions import TooLittleElementsException
 from models.locations import locations_TUM
 from parsers.booker_base import Booker
 
@@ -16,31 +17,80 @@ class TUMBooker(Booker):
     async def book_room(self, area: str = "Stammgelände"):
         location = locations_TUM.get(area)
         self._driver.get(f"https://www.ub.tum.de/reserve/{location}")
-        element_mail = self._driver.find_element(By.ID, "edit-anon-mail")
+        (
+            element_agreement,
+            element_identifier,
+            element_mail,
+            element_name,
+            element_privacy,
+            element_radio,
+            len_elements,
+        ) = await self.get_input_elements()
 
+        if len_elements == 6:
+
+            await self.send_inputs(
+                element_agreement,
+                element_identifier,
+                element_mail,
+                element_name,
+                element_privacy,
+                element_radio,
+            )
+        else:
+            print("Too little elements found in page")
+            raise TooLittleElementsException
+        time.sleep(2)
+        element_privacy.submit()
+
+    async def send_inputs(
+        self,
+        element_agreement,
+        element_identifier,
+        element_mail,
+        element_name,
+        element_privacy,
+        element_radio,
+    ):
         element_mail.send_keys(self._e_mail)
-
-        element_identifier = self._driver.find_element(By.ID, "edit-field-tum-kennung-und-0-value")
-
         element_identifier.send_keys(self._identifier)
-
-        element_name = self._driver.find_element(By.ID, "edit-field-tn-name-und-0-value")
-
         element_name.send_keys(self._name)
+        element_radio.click()
+        element_agreement.click()
+        element_privacy.click()
 
+    async def get_input_elements(self):
+        element_mail = self._driver.find_element(By.ID, "edit-anon-mail")
+        element_identifier = self._driver.find_element(
+            By.ID, "edit-field-tum-kennung-und-0-value"
+        )
+        element_name = self._driver.find_element(
+            By.ID, "edit-field-tn-name-und-0-value"
+        )
         element_radio = self._driver.find_element_by_xpath(
             '//*[@id="edit-field-stud-ma-und"]/div[1]/label'
         )
-        element_radio.click()
-
         element_agreement = self._driver.find_element(
             By.XPATH, '//*[@id="edit-field-benutzungsrichtlinien"]/div/label/span'
         )
-        element_agreement.click()
-
         element_privacy = self._driver.find_element(
             By.XPATH, '//*[@id="edit-field-datenschutzerklaerung"]/div/label/span'
         )
-        element_privacy.click()
-        time.sleep(2)
-        element_privacy.submit()
+        return (
+            element_agreement,
+            element_identifier,
+            element_mail,
+            element_name,
+            element_privacy,
+            element_radio,
+            len(
+                [
+                    element_agreement,
+                    element_identifier,
+                    element_mail,
+                    element_name,
+                    element_privacy,
+                    element_radio,
+                ]
+            ),
+        )

@@ -17,8 +17,8 @@ async def main():
         identifier="ga58goq",
         arguments={"location": "Garching"},
     )
-    # Schedule three calls *concurrently*:
-    L = await asyncio.gather(qwe.book_room(), asd.book_room())
+
+    L = await asyncio.gather(qwe.book_room("Garching"), asd.book_room())
     print(L)
 
 
