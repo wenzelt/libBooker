@@ -18,8 +18,8 @@ async def main():
         arguments={"location": "Garching"},
     )
 
-    L = await asyncio.gather(qwe.book_room("Garching"), asd.book_room())
-    print(L)
+    tasks = await asyncio.gather(qwe.book_room("Garching"), asd.book_room())
+    print(tasks)
 
 
 if __name__ == "__main__":
