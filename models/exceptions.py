@@ -4,3 +4,7 @@ class NotBookableException(Exception):
 
 class UnknownException(Exception):
     pass
+
+
+class TooLittleElementsException(Exception):
+    pass
