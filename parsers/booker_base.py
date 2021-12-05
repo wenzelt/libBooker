@@ -9,8 +9,8 @@ from utilities.v_display import start_virtual_displays
 class Booker(ABC):
     def __init__(self, arguments: dict):
         self._additional_args = arguments
-        # if sys.platform == "linux" or sys.platform == "linux2":
-        #     self._v_display = start_virtual_displays()
+        if sys.platform == "linux" or sys.platform == "linux2":
+            self._v_display = start_virtual_displays()
         self._driver = webdriver.Chrome()
 
     @abstractmethod
