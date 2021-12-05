@@ -40,8 +40,7 @@ class TUMBooker(Booker):
         else:
             print("Too little elements found in page")
             raise TooLittleElementsException
-        time.sleep(2)
-        element_privacy.submit()
+
 
     async def send_inputs(
         self,
@@ -58,6 +57,8 @@ class TUMBooker(Booker):
         element_radio.click()
         element_agreement.click()
         element_privacy.click()
+        time.sleep(2)
+        element_privacy.submit()
 
     async def get_input_elements(self):
         element_mail = self._driver.find_element(By.ID, "edit-anon-mail")
