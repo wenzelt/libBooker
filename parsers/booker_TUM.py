@@ -13,7 +13,7 @@ class TUMBooker(Booker):
         self._e_mail = e_mail
         self._identifier = identifier
 
-    def book_room(self, area: str = "Stammgelände"):
+    async def book_room(self, area: str = "Stammgelände"):
         location = locations_TUM.get(area)
         self._driver.get(f"https://www.ub.tum.de/reserve/{location}")
         element = self._driver.find_element(By.ID, "edit-anon-mail")

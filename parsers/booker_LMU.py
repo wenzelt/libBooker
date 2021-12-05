@@ -75,7 +75,7 @@ class LMUBooker(Booker):
             self.book_slot(SlotStatus.EARLY, self._driver)
             self.book_slot(SlotStatus.EARLY, self._driver)
 
-    def book_room(self):
+    async def book_room(self):
         try:
 
             self._driver.get("https://reservierung.ub.uni-muenchen.de/admin.php")
