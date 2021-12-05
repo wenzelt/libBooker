@@ -16,24 +16,31 @@ class TUMBooker(Booker):
     async def book_room(self, area: str = "Stammgelände"):
         location = locations_TUM.get(area)
         self._driver.get(f"https://www.ub.tum.de/reserve/{location}")
-        element = self._driver.find_element(By.ID, "edit-anon-mail")
-        element.send_keys(self._e_mail)
-        element = self._driver.find_element(By.ID, "edit-field-tum-kennung-und-0-value")
-        element.send_keys(self._identifier)
-        element = self._driver.find_element(By.ID, "edit-field-tn-name-und-0-value")
-        element.send_keys(self._name)
+        element_mail = self._driver.find_element(By.ID, "edit-anon-mail")
 
-        element = self._driver.find_element_by_xpath(
+        element_mail.send_keys(self._e_mail)
+
+        element_identifier = self._driver.find_element(By.ID, "edit-field-tum-kennung-und-0-value")
+
+        element_identifier.send_keys(self._identifier)
+
+        element_name = self._driver.find_element(By.ID, "edit-field-tn-name-und-0-value")
+
+        element_name.send_keys(self._name)
+
+        element_radio = self._driver.find_element_by_xpath(
             '//*[@id="edit-field-stud-ma-und"]/div[1]/label'
         )
-        element.click()
-        element = self._driver.find_element(
+        element_radio.click()
+
+        element_agreement = self._driver.find_element(
             By.XPATH, '//*[@id="edit-field-benutzungsrichtlinien"]/div/label/span'
         )
-        element.click()
-        element = self._driver.find_element(
+        element_agreement.click()
+
+        element_privacy = self._driver.find_element(
             By.XPATH, '//*[@id="edit-field-datenschutzerklaerung"]/div/label/span'
         )
-        element.click()
+        element_privacy.click()
         time.sleep(2)
-        element.submit()
+        element_privacy.submit()
