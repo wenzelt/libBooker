@@ -9,6 +9,7 @@ import config
 from models.exceptions import UnknownException
 from models.page_enums import PageStatus, SlotStatus
 from parsers.booker_base import Booker
+from schedule import Schedule, lauri_schedule
 from utilities.folder_manager import save_screenshot, save_page_source
 
 
@@ -28,9 +29,9 @@ class LMUBooker(Booker):
         else:
             return PageStatus.UNDEFINED
 
-    def book_slot(self,
-                  slot: SlotStatus, area=config.AREA, room=config.ROOM
-                  ) -> Tuple[SlotStatus, bool]:
+    def book_slot(
+            self, slot: SlotStatus, area=config.AREA, room=config.ROOM
+    ) -> Tuple[SlotStatus, bool]:
         now = datetime.now()
         next_bookable_date = now + timedelta(days=2)
         room_url = f"https://reservierung.ub.uni-muenchen.de/edit_entry.php?view=day&year={next_bookable_date.year}&month={next_bookable_date.month}&day={next_bookable_date.day}&area={area}&room={room}&period={slot}"
@@ -39,8 +40,6 @@ class LMUBooker(Booker):
         save_screenshot(self._driver)
         save_page_source(self._driver)
 
-        # if not check_bookable(self._driver.page_source):
-        #     return slot, False
         name_field = self._driver.find_element(By.ID, "name")
         name_field.send_keys(config.RESERVATION_NAME)
         name_field.submit()
@@ -49,6 +48,32 @@ class LMUBooker(Booker):
         save_page_source(self._driver)
         time.sleep(1)
         return slot, True
+
+    @staticmethod
+    def get_next_bookable_date() -> datetime:
+        now = datetime.now()
+        next_bookable_date = now + timedelta(days=2)
+        return next_bookable_date
+
+    def book_by_schedule(self, schedule: Schedule):
+        next_date = self.get_next_bookable_date()
+        weekday = next_date.strftime("%A")
+        amount_slots = schedule[weekday]
+        if amount_slots == 3:
+            self.book_slot(SlotStatus.EARLY, self._driver),
+            self.book_slot(SlotStatus.NOON, self._driver),
+            self.book_slot(SlotStatus.LATE, self._driver),
+            self.book_slot(SlotStatus.EARLY, self._driver),
+            self.book_slot(SlotStatus.NOON, self._driver),
+            self.book_slot(SlotStatus.LATE, self._driver),
+        if amount_slots == 2:
+            self.book_slot(SlotStatus.EARLY, self._driver),
+            self.book_slot(SlotStatus.NOON, self._driver),
+            self.book_slot(SlotStatus.EARLY, self._driver),
+            self.book_slot(SlotStatus.NOON, self._driver),
+        if amount_slots == 1:
+            self.book_slot(SlotStatus.EARLY, self._driver)
+            self.book_slot(SlotStatus.EARLY, self._driver)
 
     def book_room(self):
         try:
@@ -70,13 +95,7 @@ class LMUBooker(Booker):
                 print("Maybe already logged in. Skipping...")
 
             # booking all three slots for
-
-            self.book_slot(SlotStatus.EARLY),
-            self.book_slot(SlotStatus.NOON),
-            self.book_slot(SlotStatus.LATE),
-            self.book_slot(SlotStatus.EARLY),
-            self.book_slot(SlotStatus.NOON),
-            self.book_slot(SlotStatus.LATE)
+            self.book_by_schedule(lauri_schedule)
 
         except UnknownException:
             self._driver.quit()

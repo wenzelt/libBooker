@@ -71,37 +71,10 @@ def book_slot(
     return slot, True
 
 
-def get_next_bookable_date() -> datetime:
-    now = datetime.now()
-    next_bookable_date = now + timedelta(days=2)
-    return next_bookable_date
-
-
 def start_virtual_displays() -> Xvfb:
     vdisplay = Xvfb()
     vdisplay.start()
     return vdisplay
-
-
-def book_by_schedule(schedule: Schedule):
-    next_date = get_next_bookable_date()
-    weekday = next_date.strftime("%A")
-    amount_slots = schedule[weekday]
-    if amount_slots == 3:
-        book_slot(SlotStatus.EARLY, driver),
-        book_slot(SlotStatus.NOON, driver),
-        book_slot(SlotStatus.LATE, driver),
-        book_slot(SlotStatus.EARLY, driver),
-        book_slot(SlotStatus.NOON, driver),
-        book_slot(SlotStatus.LATE, driver),
-    if amount_slots == 2:
-        book_slot(SlotStatus.EARLY, driver),
-        book_slot(SlotStatus.NOON, driver),
-        book_slot(SlotStatus.EARLY, driver),
-        book_slot(SlotStatus.NOON, driver),
-    if amount_slots == 1:
-        book_slot(SlotStatus.EARLY, driver)
-        book_slot(SlotStatus.EARLY, driver)
 
 
 if __name__ == "__main__":
