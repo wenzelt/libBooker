@@ -72,7 +72,9 @@ def check_bookable(page_source: str) -> bool:
     return False
 
 
-def book_slot(slot: SlotStatus, driver: WebDriver, area=config.AREA, room=config.ROOM) -> Tuple[SlotStatus, bool]:
+def book_slot(
+    slot: SlotStatus, driver: WebDriver, area=config.AREA, room=config.ROOM
+) -> Tuple[SlotStatus, bool]:
     now = datetime.now()
     next_bookable_date = now + timedelta(days=2)
     room_url = f"https://reservierung.ub.uni-muenchen.de/edit_entry.php?view=day&year={next_bookable_date.year}&month={next_bookable_date.month}&day={next_bookable_date.day}&area={area}&room={room}&period={slot}"
