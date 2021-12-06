@@ -9,6 +9,7 @@ pyppeteer = "*"
 selenium = "*"
 xvfbwrapper = "*"
 pytest = "*"
+selenium-requests = "*"
 
 [dev-packages]
 
