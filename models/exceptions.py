@@ -8,3 +8,11 @@ class UnknownException(Exception):
 
 class TooLittleElementsException(Exception):
     pass
+
+
+class ErrorDetectedException(Exception):
+    pass
+
+
+class NotLoggedinException(Exception):
+    pass
