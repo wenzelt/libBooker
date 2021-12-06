@@ -8,7 +8,7 @@ from selenium.webdriver.common.by import By
 import config
 from models.exceptions import UnknownException
 from models.page_enums import PageStatus, SlotStatus
-from parsers.booker_base import Booker
+from bookers.booker_base import Booker
 from schedule import Schedule, lauri_schedule
 from utilities.folder_manager import save_screenshot, save_page_source
 

@@ -1,10 +1,11 @@
 import time
 
+from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
-from models.exceptions import TooLittleElementsException
+from bookers.booker_base import Booker
+from models.exceptions import TooLittleElementsException, ErrorDetectedException
 from models.locations import locations_TUM
-from parsers.booker_base import Booker
 
 
 class TUMBooker(Booker):
@@ -13,6 +14,10 @@ class TUMBooker(Booker):
         self._name = name
         self._e_mail = e_mail
         self._identifier = identifier
+        self._soup = None
+
+    def set_soup(self, html: str):
+        self._soup = BeautifulSoup(html, features="html.parser")
 
     async def book_room(self, area: str = "Stammgelände"):
         location = locations_TUM.get(area)
@@ -41,7 +46,6 @@ class TUMBooker(Booker):
             print("Too little elements found in page")
             raise TooLittleElementsException
 
-
     async def send_inputs(
         self,
         element_agreement,
@@ -59,6 +63,15 @@ class TUMBooker(Booker):
         element_privacy.click()
         time.sleep(2)
         element_privacy.submit()
+        self._driver.implicitly_wait(1)
+        self.set_soup(self._driver.page_source)
+        self.check_source_for_errors()
+
+    def check_source_for_errors(self):
+        if asd := self._soup.find("div", {"class": "messages error"}):
+            raise ErrorDetectedException(
+                f"We have encountered an error while booking. {asd.text}"
+            )
 
     async def get_input_elements(self):
         element_mail = self._driver.find_element(By.ID, "edit-anon-mail")
