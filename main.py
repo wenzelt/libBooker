@@ -1,7 +1,7 @@
 import asyncio
 
-from parsers.booker_LMU import LMUBooker
-from parsers.booker_TUM import TUMBooker
+from bookers.booker_LMU import LMUBooker
+from bookers.booker_TUM import TUMBooker
 
 
 async def main():
