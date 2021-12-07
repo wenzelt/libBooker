@@ -68,7 +68,7 @@ class ScraperMoodle(Scraper):
             self.set_soup(self._driver.page_source)
             document_links = self.get_doc_links()
             for document in document_links:
-                self.download_file(course,document)
+                self.download_file(course, document)
 
     def download_file(self, course, document):
         response = self._driver.request("GET", document.href)

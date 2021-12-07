@@ -20,7 +20,9 @@ def save_page_source(driver: WebDriver):
 
 
 def save_pdf(content, course, document):
-    filename, path = generate_course_filespath(course, document, extension_string=".pdf")
+    filename, path = generate_course_filespath(
+        course, document, extension_string=".pdf"
+    )
     # Create the file
     if filename and path:
         with open(os.path.join(path, filename.replace("/", "_")), "wb") as f:
@@ -28,7 +30,9 @@ def save_pdf(content, course, document):
             f.close()
 
 
-def generate_course_filespath(course, document, extension_string: str) -> Tuple[Optional[str], Optional[str]]:
+def generate_course_filespath(
+    course, document, extension_string: str
+) -> Tuple[Optional[str], Optional[str]]:
     # Find out what the year, month, day and time is
     # Add the time and the .txt extension as the filename
     filename = document.title + extension_string
