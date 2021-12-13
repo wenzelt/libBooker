@@ -3,10 +3,12 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from tqdm import tqdm
 
 from models.course import MoodleCourse, FileInfo
 from models.exceptions import NotLoggedinException
 from scrapers.scraper_base import Scraper
+from utilities.file_indexer import FileIndexer, FileIndex
 from utilities.folder_manager import save_pdf
 
 
@@ -53,7 +55,7 @@ class ScraperMoodle(Scraper):
     async def set_all_course_links(self):
         active_courses = self.soup.find("div", {"id": "coc-courselist"})
         self.course_links = [
-            MoodleCourse(title=i["title"], href=i["href"])
+            MoodleCourse(title=i["title"].replace("/","_"), href=i["href"])
             for i in active_courses.find_all("a", {"title": True, "href": True})
             if i["href"].startswith("https://www.moodle.tum.de/course/view.php?")
         ]
@@ -63,12 +65,17 @@ class ScraperMoodle(Scraper):
             raise NotLoggedinException
 
     async def download_all(self):
+        indexer = FileIndexer()
+        file_index = indexer.scan()
         for course in self.course_links:
             self._driver.get(course.href)
             self.set_soup(self._driver.page_source)
             document_links = self.get_doc_links()
-            for document in document_links:
-                self.download_file(course, document)
+            x = [i for i in file_index if i.folder == course.title]
+            current_course_index = x[0] if x else FileIndex(folder = None, files = [])
+
+            for document in tqdm(document_links):
+                self.download_file(course, document) if f"{document.title}.pdf" not in current_course_index.files else print("File in index. Skipping...")
 
     def download_file(self, course, document):
         response = self._driver.request("GET", document.href)

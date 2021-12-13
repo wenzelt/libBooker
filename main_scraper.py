@@ -1,10 +1,11 @@
 import asyncio
 
+import config
 from scrapers.scrape_moodle import ScraperMoodle
 
 
 async def main():
-    tum = ScraperMoodle(arguments={"username": "ga58goq", "password": "Supert0ast96"})
+    tum = ScraperMoodle(arguments={"username": f"{config.USERNAME_MOODLE}", "password": f"{config.PW_MOODLE}"})
     tasks = await asyncio.gather(tum.scrape())
     print(tasks)
 

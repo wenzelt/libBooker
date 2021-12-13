@@ -1,12 +1,13 @@
 import unittest
 
-from utilities.file_indexer import FileIndex
+from utilities.file_indexer import FileIndexer
 
 
-class FileIndexTest(unittest.TestCase):
-    def test_something(self):
-        asd = FileIndex()
-        asd.scan()
+class FileIndexerTest(unittest.TestCase):
+    def test_file_scan(self):
+        asd = FileIndexer()
+        file_index = asd.scan()
+        print(file_index)
 
 
 if __name__ == "__main__":
