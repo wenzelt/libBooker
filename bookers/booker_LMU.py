@@ -6,9 +6,9 @@ from typing import Tuple
 from selenium.webdriver.common.by import By
 
 import config
+from bookers.booker_base import Booker
 from models.exceptions import UnknownException
 from models.page_enums import PageStatus, SlotStatus
-from bookers.booker_base import Booker
 from schedule import Schedule, lauri_schedule
 from utilities.folder_manager import save_screenshot, save_page_source
 
@@ -60,6 +60,7 @@ class LMUBooker(Booker):
         weekday = next_date.strftime("%A")
         amount_slots = schedule[weekday]
         if amount_slots == 3:
+            print(f"Booking {amount_slots} slots for {weekday}")
             self.book_slot(SlotStatus.EARLY, self._driver),
             self.book_slot(SlotStatus.NOON, self._driver),
             self.book_slot(SlotStatus.LATE, self._driver),
@@ -67,17 +68,18 @@ class LMUBooker(Booker):
             self.book_slot(SlotStatus.NOON, self._driver),
             self.book_slot(SlotStatus.LATE, self._driver),
         if amount_slots == 2:
+            print(f"Booking {amount_slots} slots for {weekday}")
             self.book_slot(SlotStatus.EARLY, self._driver),
             self.book_slot(SlotStatus.NOON, self._driver),
             self.book_slot(SlotStatus.EARLY, self._driver),
             self.book_slot(SlotStatus.NOON, self._driver),
         if amount_slots == 1:
+            print(f"Booking {amount_slots} slots for {weekday}")
             self.book_slot(SlotStatus.EARLY, self._driver)
             self.book_slot(SlotStatus.EARLY, self._driver)
 
     async def book_room(self):
         try:
-
             self._driver.get("https://reservierung.ub.uni-muenchen.de/admin.php")
             print("Getting login URL")
             time.sleep(1)

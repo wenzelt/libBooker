@@ -5,7 +5,12 @@ from scrapers.scrape_moodle import ScraperMoodle
 
 
 async def main():
-    tum = ScraperMoodle(arguments={"username": f"{config.USERNAME_MOODLE}", "password": f"{config.PW_MOODLE}"})
+    tum = ScraperMoodle(
+        arguments={
+            "username": f"{config.USERNAME_MOODLE}",
+            "password": f"{config.PW_MOODLE}",
+        }
+    )
     tasks = await asyncio.gather(tum.scrape())
     print(tasks)
 

@@ -16,6 +16,11 @@ class FileIndexer:
 
     def scan(self):
         return [
-            FileIndex(folder=p.name, files=[i.name for i in p.iterdir() if i.is_file() and i.suffix == ".pdf"])
+            FileIndex(
+                folder=p.name,
+                files=[
+                    i.name for i in p.iterdir() if i.is_file() and i.suffix == ".pdf"
+                ],
+            )
             for p in self.path.iterdir()
         ]

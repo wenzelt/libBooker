@@ -55,7 +55,7 @@ class ScraperMoodle(Scraper):
     async def set_all_course_links(self):
         active_courses = self.soup.find("div", {"id": "coc-courselist"})
         self.course_links = [
-            MoodleCourse(title=i["title"].replace("/","_"), href=i["href"])
+            MoodleCourse(title=i["title"].replace("/", "_"), href=i["href"])
             for i in active_courses.find_all("a", {"title": True, "href": True})
             if i["href"].startswith("https://www.moodle.tum.de/course/view.php?")
         ]
@@ -72,10 +72,14 @@ class ScraperMoodle(Scraper):
             self.set_soup(self._driver.page_source)
             document_links = self.get_doc_links()
             x = [i for i in file_index if i.folder == course.title]
-            current_course_index = x[0] if x else FileIndex(folder = None, files = [])
+            current_course_index = x[0] if x else FileIndex(folder=None, files=[])
 
             for document in tqdm(document_links):
-                self.download_file(course, document) if f"{document.title}.pdf" not in current_course_index.files else print("File in index. Skipping...")
+                self.download_file(
+                    course, document
+                ) if f"{document.title}.pdf" not in current_course_index.files else print(
+                    "File in index. Skipping..."
+                )
 
     def download_file(self, course, document):
         response = self._driver.request("GET", document.href)
