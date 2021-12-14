@@ -3,12 +3,11 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from tqdm import tqdm
 
-from models.course import MoodleCourse, FileInfo
-from models.exceptions import NotLoggedinException
+from models.course import MoodleCourse, DocInfo
+from models.exceptions import NotLoggedinException, DownloadException
 from scrapers.scraper_base import Scraper
-from utilities.file_indexer import FileIndexer, FileIndex
+from utilities.file_indexer import FileIndexer
 from utilities.folder_manager import save_pdf
 
 
@@ -66,28 +65,29 @@ class ScraperMoodle(Scraper):
 
     async def download_all(self):
         indexer = FileIndexer()
-        file_index = indexer.scan()
         for course in self.course_links:
             self._driver.get(course.href)
             self.set_soup(self._driver.page_source)
             document_links = self.get_doc_links()
-            x = [i for i in file_index if i.folder == course.title]
-            current_course_index = x[0] if x else FileIndex(folder=None, files=[])
+            for document in document_links:
+                if indexer.check_if_file_exists(filename=document.title, course_name=course.title,
+                                                extension=document.extension):
+                    print(f"Skipping file {document.title} in {course.title}...")
+                else:
+                    self.download_and_save_file(course, document)
 
-            for document in tqdm(document_links):
-                self.download_file(
-                    course, document
-                ) if f"{document.title}.pdf" not in current_course_index.files else print(
-                    "File in index. Skipping..."
-                )
-
-    def download_file(self, course, document):
-        response = self._driver.request("GET", document.href)
+    def download_and_save_file(self, course, document):
+        print(f"Downloading file:  {course.title} / {document.title}")
+        try:
+            response = self._driver.request("GET", document.href)
+        except Exception:
+            raise DownloadException(f"Could not download file {course.title} / {document.title}")
         save_pdf(response.content, course, document)
 
-    def get_doc_links(self) -> Optional[List[FileInfo]]:
+    def get_doc_links(self) -> Optional[List[DocInfo]]:
         doc_links = [
-            FileInfo(title=i.text.replace(" ", "_"), href=i["href"])
+            DocInfo(title=i.text.replace(" ", "_"), href=i["href"],
+                    extension="pdf" if "pdf" in i.img.get("src") else None)
             for i in self.soup.find_all("a", {"class": "aalink"})
             if i["href"].startswith("https://www.moodle.tum.de/mod/resource/")
         ]

@@ -8,6 +8,7 @@ class MoodleCourse:
 
 
 @dataclass
-class FileInfo:
+class DocInfo:
     title: str
     href: str
+    extension: str

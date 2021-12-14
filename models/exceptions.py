@@ -16,3 +16,7 @@ class ErrorDetectedException(Exception):
 
 class NotLoggedinException(Exception):
     pass
+
+
+class DownloadException(Exception):
+    pass
